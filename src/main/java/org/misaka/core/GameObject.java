@@ -86,4 +86,17 @@ public class GameObject {
     public <T> T getComponent(String componentType) {
         return (T) this.components.get(Component.components.get(componentType));
     }
+
+    public GameObject find(String name) {
+        for (GameObject child : children) {
+            if (child.getName().equals(name)) {
+                return child;
+            }
+            GameObject inChild = child.find(name);
+            if (inChild != null) {
+                return inChild;
+            }
+        }
+        return null;
+    }
 }

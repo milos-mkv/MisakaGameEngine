@@ -4,8 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.misaka.core.GameObject;
+import org.misaka.core.Scene;
+import org.misaka.core.components.ScriptComponent;
+import org.misaka.core.components.SpriteComponent;
 import org.misaka.core.components.TransformComponent;
 
+import java.nio.file.Paths;
 import java.util.UUID;
 
 public abstract class GameObjectFactory {
@@ -67,6 +71,28 @@ public abstract class GameObjectFactory {
             System.out.println(e);
         }
         return gameObject;
+    }
+
+    public static void reconstructGameObject(Scene scene, GameObject gameObject) {
+        for (Class<?> component : gameObject.getComponents().keySet()) {
+            if (component == ScriptComponent.class) {
+                ScriptComponent scriptComponent = gameObject.getComponent(ScriptComponent.class);
+                if (scriptComponent.getFilePath() != null) {
+                    scriptComponent.addScriptFile(scene, Paths.get(scriptComponent.getFilePath()));
+                }
+            }
+            if (component == SpriteComponent.class) {
+                SpriteComponent spriteComponent = gameObject.getComponent(SpriteComponent.class);
+                if (spriteComponent.getFilePath() != null) {
+                    spriteComponent.setTexture(spriteComponent.getFilePath());
+                }
+            }
+        }
+
+        for (GameObject child : gameObject.getChildren()) {
+            child.setParent(gameObject);
+            reconstructGameObject(scene, child);
+        }
     }
 
 }

@@ -1,5 +1,9 @@
 package org.misaka.utils;
 
+import org.jetbrains.annotations.NotNull;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.util.nfd.NativeFileDialog;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -23,5 +27,16 @@ public abstract class Utils {
             System.out.println(e);
         }
         return content;
+    }
+
+    public static String openFileDialog() {
+        try {
+            var pointerBuffer = PointerBuffer.allocateDirect(1);
+            NativeFileDialog.NFD_OpenDialog(pointerBuffer, null, (CharSequence) null);
+            return pointerBuffer.getStringASCII().replace("\\", "/");
+        } catch (Exception e) {
+            System.out.println(e);
+            return null;
+        }
     }
 }

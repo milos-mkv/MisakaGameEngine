@@ -4,10 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.JsePlatform;
 import org.misaka.core.GameObject;
 import org.misaka.core.Scene;
+import org.misaka.core.components.CameraComponent;
+import org.misaka.core.components.TransformComponent;
+import org.misaka.gfx.FrameBuffer;
 
 public abstract class SceneFactory {
 
@@ -30,6 +35,14 @@ public abstract class SceneFactory {
     public static Scene createScene(String name) {
         Scene scene = new Scene(name);
         addCustomScriptPath(scene);
+        scene.setFrameBuffer(new FrameBuffer(800, 600, false));
+
+        GameObject mainCameraGameObject = GameObjectFactory.createGameObject("Main Camera");
+        mainCameraGameObject.addComponent(new CameraComponent());
+
+        mainCameraGameObject.getComponent(TransformComponent.class).setPosition(new Vector3f(0, 0, -1));
+        mainCameraGameObject.getComponent(CameraComponent.class).setViewport(new Vector2f(800, 600));
+        scene.addGameObject(mainCameraGameObject);
         return scene;
     }
 
@@ -68,10 +81,9 @@ public abstract class SceneFactory {
     public static Scene generateSceneFromJson(String json) {
         try {
             final Scene scene = objectMapper.readValue(json, Scene.class);
-            // We have to reassing all parent to game objects because we ignore parents in json.
-            scene.getRootGameObject().getChildren().forEach((value) -> reassignParentGameObjects(scene.getRootGameObject()));
-            // Also load script paths because we also don't save globals to json.
+            GameObjectFactory.reconstructGameObject(scene, scene.getRootGameObject());
             addCustomScriptPath(scene);
+            scene.setFrameBuffer(new FrameBuffer(800, 600, false));
             return scene;
         } catch (JsonProcessingException e) {
             System.out.println(e);
@@ -79,14 +91,7 @@ public abstract class SceneFactory {
         return null;
     }
 
-    /**
-     * Reassign parents to game objects.
-     * @param gameObject Game Object.
-     */
-    private static void reassignParentGameObjects(GameObject gameObject) {
-        for (GameObject child : gameObject.getChildren()) {
-            child.setParent(gameObject);
-            reassignParentGameObjects(child);
-        }
+    public static void disposeScene(Scene scene) {
+        scene.getFrameBuffer().dispose();
     }
 }

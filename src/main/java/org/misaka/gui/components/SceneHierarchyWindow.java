@@ -4,6 +4,8 @@ import imgui.ImGui;
 import imgui.flag.ImGuiTreeNodeFlags;
 import org.misaka.core.GameObject;
 import org.misaka.core.Scene;
+import org.misaka.factory.SceneFactory;
+import org.misaka.gui.GameEngineUI;
 import org.misaka.gui.GameEngineUIComponent;
 import org.misaka.managers.SceneManager;
 
@@ -23,6 +25,10 @@ public class SceneHierarchyWindow implements GameEngineUIComponent {
     public void render() {
         Scene scene = SceneManager.getActiveScene();
         ImGui.begin("Scene Hierarchy Window");
+
+        if (ImGui.button("Save scene")) {
+            System.out.println(SceneFactory.generateJsonFromScene(scene));
+        }
         if (scene != null) {
             ImGui.text(scene.getName());
 
@@ -45,6 +51,13 @@ public class SceneHierarchyWindow implements GameEngineUIComponent {
         ImGui.pushID(gameObject.getId().toString());
         int flag = (ImGuiTreeNodeFlags.SpanFullWidth | ImGuiTreeNodeFlags.OpenOnArrow);
         boolean open = ImGui.treeNodeEx(gameObject.getName(), flag);
+
+        if (ImGui.isItemClicked()) {
+            GameEngineUI.getInstance()
+                    .getComponent(GameObjectInspectorWindow.class)
+                    .setGameObject(gameObject);
+        }
+
         if (ImGui.beginDragDropSource()) {
             ImGui.setDragDropPayload("GameObject", gameObject);
             ImGui.text(gameObject.getName());
@@ -52,17 +65,11 @@ public class SceneHierarchyWindow implements GameEngineUIComponent {
         }
 
         // NOTE: Moving object directly to another game object its just addition to list.
-        if (ImGui.beginDragDropTarget()) {
-            GameObject payload = ImGui.acceptDragDropPayload("GameObject");
-            if (payload != null && payload != gameObject && gameObject != payload.getParent()) {
-                gameObjectToMove = payload;
-                gameObjectToMoveTo = gameObject;
-                gameObjectToMoveNewIndex = gameObject.getChildren().size();
-            }
-            ImGui.endDragDropTarget();
-        }
+        setDragTargetForGameObjectReorder(gameObject.getChildren().size(), gameObject);
 
         if (open) {
+
+
             int index = 0;
             for (GameObject childGameObject : gameObject.getChildren()) {
                 ImGui.separator();
@@ -88,7 +95,6 @@ public class SceneHierarchyWindow implements GameEngineUIComponent {
     }
 
     private void process() {
-
         if (gameObjectToMove != null) {
             if (gameObjectToMove.getParent() == gameObjectToMoveTo) {
                 attachGameObjectToSameParent();
@@ -97,7 +103,6 @@ public class SceneHierarchyWindow implements GameEngineUIComponent {
             }
         }
 
-        // Reset these.
         gameObjectToMoveTo = null;
         gameObjectToMove = null;
         gameObjectToMoveNewIndex = 0;

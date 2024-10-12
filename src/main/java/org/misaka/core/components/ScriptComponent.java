@@ -1,5 +1,6 @@
 package org.misaka.core.components;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.luaj.vm2.LuaValue;
 import org.misaka.core.Component;
@@ -10,7 +11,8 @@ import java.nio.file.Path;
 @Data
 public class ScriptComponent extends Component {
 
-    private Path filePath;
+    private String filePath;
+    @JsonIgnore
     private LuaValue behaviourTable;
 
     public ScriptComponent() {
@@ -18,9 +20,11 @@ public class ScriptComponent extends Component {
     }
 
     public void addScriptFile(Scene scene, Path filePath) {
-        this.filePath = filePath;
-        LuaValue module = scene.getGlobals().loadfile(filePath.toString());
-        this.behaviourTable = module.call();
+        this.filePath = filePath.toString();
+        if (filePath != null) {
+            LuaValue module = scene.getGlobals().loadfile(filePath.toString());
+            this.behaviourTable = module.call();
+        }
     }
 
 }

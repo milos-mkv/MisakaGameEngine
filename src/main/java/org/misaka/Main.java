@@ -1,10 +1,9 @@
 package org.misaka;
 
-import org.lwjgl.glfw.GLFW;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.misaka.app.GameEngine;
-import org.misaka.core.GameObject;
-
-import java.util.ArrayList;
+import org.misaka.core.components.TransformComponent;
 
 public class Main {
     public static void main(String[] args) {

@@ -6,10 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.luaj.vm2.Globals;
 import org.misaka.factory.GameObjectFactory;
-import org.misaka.factory.SceneFactory;
+import org.misaka.gfx.FrameBuffer;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @JsonDeserialize
@@ -18,6 +16,8 @@ public class Scene {
 
     private String name;
     private GameObject rootGameObject;
+    @JsonIgnore
+    private FrameBuffer frameBuffer;
     @JsonIgnore
     private Globals globals;
 
@@ -48,5 +48,9 @@ public class Scene {
      */
     public void removeGameObject(GameObject gameObject) {
         this.rootGameObject.removeChild(gameObject);
+    }
+
+    public GameObject find(String name) {
+        return rootGameObject.find(name);
     }
 }

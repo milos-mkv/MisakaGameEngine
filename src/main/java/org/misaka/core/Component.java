@@ -6,7 +6,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.misaka.core.components.CameraComponent;
 import org.misaka.core.components.ScriptComponent;
+import org.misaka.core.components.SpriteComponent;
 import org.misaka.core.components.TransformComponent;
 
 import java.util.HashMap;
@@ -17,7 +19,10 @@ import java.util.HashMap;
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = TransformComponent.class, name = "TransformComponent"),
-        @JsonSubTypes.Type(value = ScriptComponent.class, name = "ScriptComponent")
+        @JsonSubTypes.Type(value = ScriptComponent.class, name = "ScriptComponent"),
+        @JsonSubTypes.Type(value = SpriteComponent.class, name = "SpriteComponent"),
+        @JsonSubTypes.Type(value = CameraComponent.class, name = "CameraComponent")
+
 })
 @Data
 @NoArgsConstructor
@@ -29,6 +34,8 @@ public abstract class Component {
         {
             put("Transform", TransformComponent.class);
             put("Script", ScriptComponent.class);
+            put("Sprite", SpriteComponent.class);
+            put("Camera", CameraComponent.class);
         }
     };
 
