@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.misaka.core.GameObject;
 import org.misaka.core.Scene;
+import org.misaka.core.components.CameraComponent;
 import org.misaka.core.components.ScriptComponent;
 import org.misaka.core.components.SpriteComponent;
 import org.misaka.core.components.TransformComponent;
@@ -93,6 +94,12 @@ public abstract class GameObjectFactory {
             child.setParent(gameObject);
             reconstructGameObject(scene, child);
         }
+    }
+
+    public static GameObject createCameraGameObject(String name) {
+        GameObject gameObject = createGameObject(name);
+        gameObject.addComponent(new CameraComponent());
+        return gameObject;
     }
 
 }

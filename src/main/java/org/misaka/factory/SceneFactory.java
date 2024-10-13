@@ -40,7 +40,9 @@ public abstract class SceneFactory {
         GameObject mainCameraGameObject = GameObjectFactory.createGameObject("Main Camera");
         mainCameraGameObject.addComponent(new CameraComponent());
 
-        mainCameraGameObject.getComponent(TransformComponent.class).setPosition(new Vector3f(0, 0, -1));
+        mainCameraGameObject.getComponent(TransformComponent.class).setPosition(new Vector3f(0, 0, 0));
+        mainCameraGameObject.getComponent(TransformComponent.class).setScale(new Vector3f(800, 600, 0));
+
         mainCameraGameObject.getComponent(CameraComponent.class).setViewport(new Vector2f(800, 600));
         scene.addGameObject(mainCameraGameObject);
         return scene;

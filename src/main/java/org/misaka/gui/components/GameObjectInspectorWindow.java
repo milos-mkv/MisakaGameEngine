@@ -4,12 +4,14 @@ import imgui.ImGui;
 import imgui.type.ImFloat;
 import imgui.type.ImString;
 import lombok.Data;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.nfd.NativeFileDialog;
 import org.misaka.core.GameObject;
 import org.misaka.core.Scene;
+import org.misaka.core.components.CameraComponent;
 import org.misaka.core.components.ScriptComponent;
 import org.misaka.core.components.SpriteComponent;
 import org.misaka.core.components.TransformComponent;
@@ -88,6 +90,24 @@ public class GameObjectInspectorWindow implements GameEngineUIComponent {
                 }
             }
 
+            if (gameObject.getComponent(CameraComponent.class) != null) {
+                CameraComponent cameraComponent = gameObject.getComponent(CameraComponent.class);
+                if (ImGui.collapsingHeader("Camera Component")) {
+                    Vector3f bg = cameraComponent.getBackground();
+                    float[] background = new float[] {
+                        bg.x, bg.y, bg.z
+                    };
+                    ImGui.colorEdit3("Background", background);
+                    cameraComponent.setBackground(new Vector3f(background));
+
+                    float[] viewport = new float[] {
+                            cameraComponent.getViewport().x,
+                            cameraComponent.getViewport().y
+                    };
+                    ImGui.dragFloat2("Viewport", viewport);
+                    cameraComponent.setViewport(new Vector2f(viewport));
+                }
+            }
         }
         ImGui.end();
     }

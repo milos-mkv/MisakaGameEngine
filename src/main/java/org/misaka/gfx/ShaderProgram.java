@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import static org.lwjgl.opengl.GL20.*;
 
@@ -23,5 +24,14 @@ public class ShaderProgram {
         matrix.get(buffer);
         glUniformMatrix4fv(glGetUniformLocation(id, name), false, buffer);
     }
+
+    public void setUniformBoolean(String name, int value) {
+        glUniform1i(glGetUniformLocation(id, name), value);
+    }
+
+    public void setUniformVec3(String name, Vector3f value) {
+        glUniform3f(glGetUniformLocation(id, name), value.x, value.y, value.z);
+    }
+
 
 }

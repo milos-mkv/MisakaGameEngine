@@ -8,6 +8,7 @@ import imgui.glfw.ImGuiImplGlfw;
 import imgui.internal.ImGui;
 import lombok.Getter;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -16,6 +17,7 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryUtil;
 import org.misaka.core.GameObject;
 import org.misaka.core.Scene;
+import org.misaka.core.components.CameraComponent;
 import org.misaka.core.components.ScriptComponent;
 import org.misaka.core.components.SpriteComponent;
 import org.misaka.core.components.TransformComponent;
@@ -23,13 +25,11 @@ import org.misaka.factory.GameObjectFactory;
 import org.misaka.factory.SceneFactory;
 import org.misaka.factory.ShaderFactory;
 import org.misaka.factory.TextureFactory;
-import org.misaka.gfx.Renderer;
-import org.misaka.gfx.ShaderProgram;
-import org.misaka.gfx.SpriteRenderer;
-import org.misaka.gfx.Texture;
+import org.misaka.gfx.*;
 import org.misaka.gui.GameEngineUI;
 import org.misaka.managers.SceneManager;
 
+import java.awt.*;
 import java.nio.file.Paths;
 import java.util.Objects;
 
@@ -96,65 +96,39 @@ public class GameEngine {
     public void run() {
         GameEngineUI gameEngineUI = GameEngineUI.getInstance();
 
-        GameObject ggg = null;
-        Scene scene = SceneFactory.createScene("Main Scene");
-        for (int i = 0; i < 10; i++) {
-            GameObject g = GameObjectFactory.createGameObject("GameObject" + i);
-            scene.addGameObject(g);
-            if (i==0) {
-                ggg = g;
-                g.getComponent(TransformComponent.class).setScale(new Vector3f(100, 100, 1));
-            }
-            g.addComponent(new ScriptComponent());
-            g.addComponent(new SpriteComponent());
-//            g.getComponent(SpriteComponent.class).setTexture(
-//                    Paths.get("./src/main/resources/images/misaka.png")
-//            );
-            for (int j = 0; j < 4; j++) {
-                g.addChild(GameObjectFactory.createGameObject("GameObjectChild" + i + "_" + j));
-            }
-        }
         SceneManager.init();
-        SceneManager.addScene(scene);
-        SceneManager.setActiveScene(scene);
         GameObjectFactory.init();
         SceneFactory.init();
 
-        Texture texture = TextureFactory.createTexture(Paths.get("./src/main/resources/images/misaka.png"));
+        Scene scene = SceneFactory.createScene("Main Scene");
+        SceneManager.addScene(scene);
+        SceneManager.setActiveScene(scene);
+        Renderer renderer = Renderer.getInstance();
+
+        for (int i = 0; i < 2; i++) {
+            GameObject g = GameObjectFactory.createGameObject("GameObject" + i);
+            scene.addGameObject(g);
+            g.addComponent(new ScriptComponent());
+            g.addComponent(new SpriteComponent());
+        }
+
 
         ShaderProgram shaderProgram = ShaderFactory.createShaderProgram("default",
                 Paths.get("./src/main/resources/shaders/shader.vert"),
                 Paths.get("./src/main/resources/shaders/shader.frag"));
 
-        SpriteRenderer spriteRenderer = SpriteRenderer.getInstance();
 
-        String a = SceneFactory.generateJsonFromScene(scene);
-        Renderer renderer = Renderer.getInstance();
-//        Matrix4f camProj = new Matrix4f().ortho(0, 800, 0, 600, -1.0f, 1.0f);
-//        Matrix4f view = new Matrix4f();
-//        view.translate(new Vector3f(0, 0, -1.0f));
-//        view.rotate( 10, new Vector3f(0, 0, 1));
-//        view.scale(new Vector3f(2, 1, 1));
+        ShaderProgram axisShader = ShaderFactory.createShaderProgram("axis",
+                Paths.get("./src/main/resources/shaders/axis.vert"),
+                Paths.get("./src/main/resources/shaders/axis.frag"));
+
+
+
         while (!GLFW.glfwWindowShouldClose(windowHandle)) {
             GLFW.glfwPollEvents();
-//            glBindFramebuffer(GL_FRAMEBUFFER, scene.getFrameBuffer().getId());
-//            glViewport(0, 0, 800, 600);
 
-//            glClearColor(1, 0, 0, 1);
-//            glClear(GL_COLOR_BUFFER_BIT);
-//            glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
-//            glBindTexture(GL_TEXTURE_2D, texture.getId());
-//            glUseProgram(shaderProgram.getId());
-//            shaderProgram.setUniformMatrix4("projection", camProj);
-//            shaderProgram.setUniformMatrix4("view", view);
-//            if (ggg !=  null)
-//                shaderProgram.setUniformMatrix4("model", ggg.getComponent(TransformComponent.class).getTransformMatrix());
-//            int textureUniformLocation = glGetUniformLocation(shaderProgram.getId(), "uTexture");
-//            glUniform1i(textureUniformLocation, 0);  // 0 corresponds to GL_TEXTURE0
-//
-//            spriteRenderer.render();
-//            glBindTexture(GL_TEXTURE_2D, 0);
-//            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            // TODO:
+
             renderer.render();
             imGuiImplGlfw.newFrame();
             ImGui.newFrame();
