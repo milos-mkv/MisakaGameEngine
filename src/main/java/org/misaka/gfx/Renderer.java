@@ -146,7 +146,7 @@ public class Renderer {
         shaderProgram.setUniformMatrix4("model", worldTransform);
 
         shaderProgram.setUniformVec3("bgColor", cameraComponent.getBackground());
-        spriteRenderer.render();
+//        spriteRenderer.render();
         shaderProgram.setUniformVec3("bgColor", new Vector3f(1, 1, 1));
 
         glEnable(GL_LINE_SMOOTH);

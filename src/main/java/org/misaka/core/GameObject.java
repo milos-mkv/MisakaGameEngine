@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.joml.Matrix4f;
+import org.misaka.core.components.TransformComponent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -98,5 +100,23 @@ public class GameObject {
             }
         }
         return null;
+    }
+
+    public Matrix4f getWorldTransform() {
+        if (this.parent != null) {
+            return this.parent.getWorldTransform().mul(getComponent(TransformComponent.class).getTransformMatrix());
+        }
+        return getComponent(TransformComponent.class).getTransformMatrix();
+    }
+
+    public void setWorldTransform(Matrix4f worldTransform) {
+        if (this.parent != null) {
+            Matrix4f worldParent = parent.getWorldTransform().invert();
+            Matrix4f local = new Matrix4f();
+            worldParent.mul(worldTransform, local);
+            local.getTranslation(getComponent(TransformComponent.class).getPosition());
+        } else {
+            worldTransform.getTranslation(getComponent(TransformComponent.class).getPosition());
+        }
     }
 }
