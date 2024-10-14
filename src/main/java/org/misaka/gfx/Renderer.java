@@ -4,14 +4,13 @@ import lombok.Getter;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.misaka.Main;
 import org.misaka.core.GameObject;
 import org.misaka.core.Scene;
 import org.misaka.core.Settings;
 import org.misaka.core.components.CameraComponent;
 import org.misaka.core.components.SpriteComponent;
 import org.misaka.core.components.TransformComponent;
-import org.misaka.factory.GameObjectFactory;
+import org.misaka.engine.EngineCameraController;
 import org.misaka.factory.ShaderFactory;
 import org.misaka.managers.SceneManager;
 
@@ -28,15 +27,15 @@ public class Renderer {
     private static final Renderer instance = new Renderer();
     private final SpriteRenderer spriteRenderer;
 
-    @Getter
-    private final GameObject engineCamera;
+//    @Getter
+//    private final GameObject engineCamera;
     LineRectangleMesh lineRectangleMesh;
     LineAxis lineAxis;
 
     public Renderer() {
         this.spriteRenderer = SpriteRenderer.getInstance();
-        this.engineCamera = GameObjectFactory.createCameraGameObject("Engine Camera");
-        this.engineCamera.getComponent(TransformComponent.class).setPosition(new Vector3f(0, 0, 1));
+//        this.engineCamera = GameObjectFactory.createCameraGameObject("Engine Camera");
+//        this.engineCamera.getComponent(TransformComponent.class).setPosition(new Vector3f(0, 0, 1));
         lineRectangleMesh = new LineRectangleMesh();
         lineAxis = new LineAxis();
     }
@@ -55,27 +54,38 @@ public class Renderer {
         ShaderProgram shaderProgram = ShaderFactory.getShaders().get("default");
         shaderProgram.use();
 
-        TransformComponent transformComponent = engineCamera.getComponent(TransformComponent.class);
-        if (transformComponent != null) {
-            shaderProgram.setUniformMatrix4("view", transformComponent.getTransformMatrix());
-        }
-
-        CameraComponent cameraComponent = engineCamera.getComponent(CameraComponent.class);
-        if (cameraComponent != null) {
-            shaderProgram.setUniformMatrix4("projection", cameraComponent.getCameraProjection());
-            glClearColor(cameraComponent.getBackground().x,
-                    cameraComponent.getBackground().y,
-                    cameraComponent.getBackground().z, 1);
-
-            cameraComponent.setViewport(new Vector2f(Settings.w, Settings.h));
+        if (Settings.useCamera) {
+            EngineCameraController engineCamera = EngineCameraController.getInstance();
+            shaderProgram.setUniformMatrix4("view", engineCamera.getViewMatrix().invert());
+            engineCamera.setViewport(new Vector2f(Settings.w, Settings.h));
+            shaderProgram.setUniformMatrix4("projection", engineCamera.getProjectionMatrix());
+            glClearColor(engineCamera.getBackground().x, engineCamera.getBackground().y, engineCamera.getBackground().z, 1);
             glClear(GL_COLOR_BUFFER_BIT);
+
+            axisShader.use();
+            axisShader.setUniformMatrix4("projection", engineCamera.getProjectionMatrix());
+            axisShader.setUniformMatrix4("view", engineCamera.getViewMatrix().invert());
+
+            lineAxis.render();
+        } else {
+            GameObject camera = scene.find("Main Camera");
+
+            shaderProgram.setUniformMatrix4("view", camera.getComponent(TransformComponent.class).getTransformMatrix().invert());
+//            engineCamera.setViewport(new Vector2f(Settings.w, Settings.h));
+            shaderProgram.setUniformMatrix4("projection", camera.getComponent(CameraComponent.class).getCameraProjection());
+            glClearColor(camera.getComponent(CameraComponent.class).getBackground().x, camera.getComponent(CameraComponent.class).getBackground().y, camera.getComponent(CameraComponent.class).getBackground().z, 1);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            axisShader.use();
+            axisShader.setUniformMatrix4("projection",  camera.getComponent(CameraComponent.class).getCameraProjection());
+            axisShader.setUniformMatrix4("view", camera.getComponent(TransformComponent.class).getTransformMatrix().invert());
+
+            lineAxis.render();
         }
 
-        axisShader.use();
-        axisShader.setUniformMatrix4("projection", cameraComponent.getCameraProjection());
-        axisShader.setUniformMatrix4("view", transformComponent.getTransformMatrix());
 
-        lineAxis.render();
+
+
 
         shaderProgram.use();
 

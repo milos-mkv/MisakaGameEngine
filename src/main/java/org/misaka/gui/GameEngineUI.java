@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.misaka.gui.components.ActiveSceneWindow;
 import org.misaka.gui.components.GameObjectInspectorWindow;
 import org.misaka.gui.components.SceneHierarchyWindow;
+import org.misaka.gui.widgets.EngineCameraInfoWindow;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +23,8 @@ public class GameEngineUI {
         components.put(SceneHierarchyWindow.class, new SceneHierarchyWindow());
         components.put(GameObjectInspectorWindow.class, new GameObjectInspectorWindow());
         components.put(ActiveSceneWindow.class, new ActiveSceneWindow());
+        components.put(EngineCameraInfoWindow.class, new EngineCameraInfoWindow());
+
     }
 
     public void render() {
