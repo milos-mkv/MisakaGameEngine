@@ -1,6 +1,7 @@
 package org.misaka.utils;
 
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.util.nfd.NativeFileDialog;
 
@@ -38,5 +39,11 @@ public abstract class Utils {
             System.out.println(e);
             return null;
         }
+    }
+
+    public static float[] matrixToFloatBuffer(Matrix4f matrix) {
+        var buffer = new float[16];
+        matrix.get(buffer);
+        return buffer;
     }
 }

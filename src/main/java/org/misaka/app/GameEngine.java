@@ -21,6 +21,7 @@ import org.misaka.core.components.CameraComponent;
 import org.misaka.core.components.ScriptComponent;
 import org.misaka.core.components.SpriteComponent;
 import org.misaka.core.components.TransformComponent;
+import org.misaka.engine.EngineAssetManager;
 import org.misaka.factory.GameObjectFactory;
 import org.misaka.factory.SceneFactory;
 import org.misaka.factory.ShaderFactory;
@@ -85,15 +86,19 @@ public class GameEngine {
         ImGui.createContext();
         ImGui.styleColorsDark();
         ImGui.getIO().addConfigFlags(ImGuiConfigFlags.DockingEnable);// | ImGuiConfigFlags.ViewportsEnable);
+        EngineAssetManager.getInstance();
 
         imGuiImplGlfw = new ImGuiImplGlfw();
         imGuiImplGl3 = new ImGuiImplGl3();
         imGuiImplGlfw.init(windowHandle, true);
         imGuiImplGl3.init("#version 130");
+
+
         setupStyle();
     }
 
     public void run() {
+
         GameEngineUI gameEngineUI = GameEngineUI.getInstance();
 
         SceneManager.init();
@@ -236,6 +241,8 @@ public class GameEngine {
         style.setGrabRounding(3.0f);
         style.setLogSliderDeadzone(4.0f);
         style.setTabRounding(4.0f);
+
+//        ImGui.getIO().setFontGlobalScale(2);
     }
 
 }

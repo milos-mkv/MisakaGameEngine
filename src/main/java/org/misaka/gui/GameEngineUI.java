@@ -24,7 +24,6 @@ public class GameEngineUI {
         components.put(GameObjectInspectorWindow.class, new GameObjectInspectorWindow());
         components.put(ActiveSceneWindow.class, new ActiveSceneWindow());
         components.put(EngineCameraInfoWindow.class, new EngineCameraInfoWindow());
-
     }
 
     public void render() {

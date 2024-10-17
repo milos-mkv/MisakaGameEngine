@@ -5,13 +5,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.joml.Matrix4f;
 import org.misaka.core.components.TransformComponent;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.lang.ref.WeakReference;
+import java.util.*;
 
 @JsonDeserialize
 @NoArgsConstructor
@@ -23,22 +20,23 @@ public class GameObject {
     private List<GameObject> children;
     private HashMap<Class<?>, Component> components;
     private boolean active;
+
     @JsonIgnore
     @ToString.Exclude
-    private GameObject parent;
+    private WeakReference<GameObject> parent;
 
     public GameObject(UUID id, String name) {
         this.id = id;
         this.name = name;
         this.children = new ArrayList<GameObject>();
-        this.components = new HashMap<>();
+        this.components = new LinkedHashMap<>();
         this.parent = null;
         this.active = true;
     }
 
     public void removeFromParent() {
         if (this.parent != null) {
-            this.parent.removeChild(this);
+            Objects.requireNonNull(this.parent.get()).removeChild(this);
         }
     }
 
@@ -47,12 +45,19 @@ public class GameObject {
     }
 
     public void addChild(GameObject gameObject, int index) {
-        if (gameObject == this) {
+        if (gameObject == this || gameObject.isChild(this)) {
             return;
         }
         gameObject.removeFromParent();
         this.children.add(index, gameObject);
         gameObject.setParent(this);
+        gameObject.getComponent(TransformComponent.class).setParent(
+                getComponent(TransformComponent.class)
+        );
+    }
+
+    public void setParent(GameObject gameObject) {
+        this.parent = new WeakReference<GameObject>(gameObject);
     }
 
     public int getChildIndex(GameObject gameObject) {
@@ -79,6 +84,10 @@ public class GameObject {
         this.components.put(component.getClass(), (Component) component);
     }
 
+    public void removeComponent(String componentType) {
+        this.components.remove(Component.components.get(componentType));
+    }
+
     @SuppressWarnings("unchecked")
     public <T> T getComponent(Class<T> componentType) {
         return (T) this.components.get(componentType);
@@ -102,21 +111,22 @@ public class GameObject {
         return null;
     }
 
-    public Matrix4f getWorldTransform() {
-        if (this.parent != null) {
-            return this.parent.getWorldTransform().mul(getComponent(TransformComponent.class).getTransformMatrix());
+    public boolean isChild(GameObject gameObject) {
+        for (GameObject child : children) {
+            if (child == gameObject || child.isChild(gameObject)) {
+                return true;
+            }
         }
-        return getComponent(TransformComponent.class).getTransformMatrix();
+        return false;
     }
 
-    public void setWorldTransform(Matrix4f worldTransform) {
-        if (this.parent != null) {
-            Matrix4f worldParent = parent.getWorldTransform().invert();
-            Matrix4f local = new Matrix4f();
-            worldParent.mul(worldTransform, local);
-            local.getTranslation(getComponent(TransformComponent.class).getPosition());
-        } else {
-            worldTransform.getTranslation(getComponent(TransformComponent.class).getPosition());
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            System.out.println("Removing: " + this.name + " : " + this.id);
+            super.finalize();
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -1,14 +1,16 @@
 package org.misaka.gui.components;
 
 import imgui.ImGui;
+import imgui.ImGuiStyle;
 import imgui.ImVec2;
 import imgui.extension.imguizmo.ImGuizmo;
 import imgui.extension.imguizmo.flag.Mode;
 import imgui.extension.imguizmo.flag.Operation;
+import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiMouseButton;
 import imgui.flag.ImGuiStyleVar;
+import imgui.flag.ImGuiWindowFlags;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.misaka.core.GameObject;
 import org.misaka.core.Scene;
 import org.misaka.core.Settings;
@@ -17,19 +19,25 @@ import org.misaka.engine.EngineCameraController;
 import org.misaka.gui.GameEngineUI;
 import org.misaka.gui.GameEngineUIComponent;
 import org.misaka.managers.SceneManager;
+import org.misaka.utils.Icons;
+import org.misaka.utils.Utils;
 
 public class ActiveSceneWindow implements GameEngineUIComponent {
 
+    private int manipulationOperation;
     private ImVec2 mouseLastPosition;
     public ActiveSceneWindow() {
         mouseLastPosition = new ImVec2(0, 0);
+        manipulationOperation = Operation.TRANSLATE;
     }
 
     @Override
     public void render() {
         Scene scene = SceneManager.getActiveScene();
         ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, 0, 0);
-        ImGui.begin("Scene");
+        int flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
+        ImGui.begin("Scene", flags);
+        var startCursorPosition = ImGui.getCursorPos();
         Settings.w = ImGui.getWindowWidth();
         Settings.h = ImGui.getWindowHeight();
         float windowHeight = ImGui.getWindowSize().y;  // Total window height
@@ -47,25 +55,71 @@ public class ActiveSceneWindow implements GameEngineUIComponent {
 
         if (ImGui.isWindowHovered() && ImGui.isMouseDragging(ImGuiMouseButton.Right)) {
             EngineCameraController.getInstance()
-                    .move( mouseLastPosition.x -currentMouseCursor.x, currentMouseCursor.y -  mouseLastPosition.y);
+                    .move((mouseLastPosition.x -currentMouseCursor.x), (currentMouseCursor.y -  mouseLastPosition.y));
         }
 
         if (ImGui.isWindowHovered() && ImGui.getIO().getMouseWheel() != 0.0f) {
-            EngineCameraController.getInstance()
-                    .zoom((float) (ImGui.getIO().getMouseWheel() * 0.1));
+            EngineCameraController.getInstance().zoom((float) (ImGui.getIO().getMouseWheel() * 0.1));
         }
 
         mouseLastPosition = currentMouseCursor;
 
         manipulate();
+        ImGui.setCursorPos(startCursorPosition.x + 10, startCursorPosition.y + 10);
+        renderManipulationToolbar();
+        ImGui.sameLine();
+        renderEngineCameraInfo();
 
         ImGui.end();
         ImGui.popStyleVar();
     }
 
-    private void manipulate() {
-        GameObject gameObject = GameEngineUI.getInstance().getComponent(GameObjectInspectorWindow.class).getGameObject();
+    private void renderEngineCameraInfo() {
+        var camera = EngineCameraController.getInstance();
+        ImGui.text("X:" + camera.getTransform().getPosition().x + " Y:" + camera.getTransform().getPosition().y);
+    }
 
+    private void renderManipulationToolbar() {
+        ImGui.beginChildFrame(1, 44, 110);
+        ImGui.setCursorPosY(ImGui.getCursorPosY() + 4);
+
+        int mode = manipulationOperation;
+
+        if (mode == Operation.TRANSLATE) {
+            ImGui.pushStyleColor(ImGuiCol.Text, 0.5f, 1.0f, 0.5f, 1.0f);
+        }
+        if (ImGui.button(Icons.Translate)) {
+            manipulationOperation = Operation.TRANSLATE;
+        }
+        if (mode == Operation.TRANSLATE) {
+            ImGui.popStyleColor();
+        }
+        if (mode == Operation.ROTATE_Z) {
+            ImGui.pushStyleColor(ImGuiCol.Text, 0.5f, 1.0f, 0.5f, 1.0f);
+        }
+        if (ImGui.button(Icons.Rotate)) {
+            manipulationOperation = Operation.ROTATE_Z;
+        }
+        if (mode == Operation.ROTATE_Z) {
+            ImGui.popStyleColor();
+        }
+
+        if (mode == Operation.SCALE) {
+            ImGui.pushStyleColor(ImGuiCol.Text, 0.5f, 1.0f, 0.5f, 1.0f);
+        }
+        if (ImGui.button(Icons.Scale)) {
+            manipulationOperation = Operation.SCALE;
+        }
+        if (mode == Operation.SCALE) {
+            ImGui.popStyleColor();
+        }
+        ImGui.endChildFrame();
+    }
+
+    private void manipulate() {
+        var gameEngineUI = GameEngineUI.getInstance();
+
+        GameObject gameObject = gameEngineUI.getComponent(GameObjectInspectorWindow.class).getGameObject();
         if (gameObject == null) {
             return;
         }
@@ -74,27 +128,25 @@ public class ActiveSceneWindow implements GameEngineUIComponent {
         ImGuizmo.setEnabled(true);
         ImGuizmo.setDrawList();
         ImGuizmo.setRect(ImGui.getWindowPosX(), ImGui.getWindowPosY(), ImGui.getWindowWidth(), ImGui.getWindowHeight());
-        TransformComponent transform = gameObject.getComponent(TransformComponent.class);
 
+        var engineCamera = EngineCameraController.getInstance();
+        var view = Utils.matrixToFloatBuffer(engineCamera.getViewMatrix().invert());
+        var proj = Utils.matrixToFloatBuffer(engineCamera.getProjectionMatrix());
 
+        var t = gameObject.getComponent(TransformComponent.class);
 
-        var view = matrix4x4ToFloatBuffer(EngineCameraController.getInstance().getViewMatrix().invert());
-        var proj = matrix4x4ToFloatBuffer(EngineCameraController.getInstance().getProjectionMatrix());
-        var tran = matrix4x4ToFloatBuffer(gameObject.getWorldTransform());
+        var transform = Utils.matrixToFloatBuffer(t.getWorldTransformMatrix());
 
-        ImGuizmo.manipulate(view, proj, tran, Operation.TRANSLATE, Mode.WORLD);
+        float rot = gameObject.getComponent(TransformComponent.class).getRotation();
+        ImGuizmo.manipulate(view, proj, transform, manipulationOperation, Mode.WORLD);
 
         if (ImGuizmo.isUsing()) {
-            Matrix4f calculatedMatrix = new Matrix4f().set(tran);
-//            calculatedMatrix.getTranslation(transform.getPosition());
-            gameObject.setWorldTransform(calculatedMatrix);
+            t.setTransformFromWorldMatrix(new Matrix4f().set(transform));
+
+            // FIXME: For some reason when using scale it resets rotation. Find why is that.
+            if (manipulationOperation == Operation.SCALE) {
+                gameObject.getComponent(TransformComponent.class).setRotation(rot);
+            }
         }
-
-    }
-
-    static float[] matrix4x4ToFloatBuffer(Matrix4f matrix4f) {
-        var buffer = new float[16];
-        matrix4f.get(buffer);
-        return buffer;
     }
 }

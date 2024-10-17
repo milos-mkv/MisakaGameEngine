@@ -4,10 +4,13 @@ import imgui.ImGui;
 import imgui.flag.ImGuiTreeNodeFlags;
 import org.misaka.core.GameObject;
 import org.misaka.core.Scene;
+import org.misaka.engine.EngineEventManager;
+import org.misaka.factory.GameObjectFactory;
 import org.misaka.factory.SceneFactory;
 import org.misaka.gui.GameEngineUI;
 import org.misaka.gui.GameEngineUIComponent;
 import org.misaka.managers.SceneManager;
+import org.misaka.utils.Icons;
 
 public class SceneHierarchyWindow implements GameEngineUIComponent {
 
@@ -15,20 +18,22 @@ public class SceneHierarchyWindow implements GameEngineUIComponent {
     private GameObject gameObjectToMoveTo;
     private int gameObjectToMoveNewIndex;
 
+    private GameObject gameObjectToDelete;
+
     public SceneHierarchyWindow() {
         gameObjectToMove = null;
         gameObjectToMoveTo = null;
+        gameObjectToDelete = null;
         gameObjectToMoveNewIndex = 0;
     }
 
     @Override
     public void render() {
         Scene scene = SceneManager.getActiveScene();
-        ImGui.begin("Scene Hierarchy Window");
+        ImGui.begin(Icons.List +" Scene Hierarchy");
 
-        if (ImGui.button("Save scene")) {
-            System.out.println(SceneFactory.generateJsonFromScene(scene));
-        }
+        displayWindowContextMenu();
+
         if (scene != null) {
             ImGui.text(scene.getName());
 
@@ -50,7 +55,7 @@ public class SceneHierarchyWindow implements GameEngineUIComponent {
     private void displayGameObject(GameObject gameObject) {
         ImGui.pushID(gameObject.getId().toString());
         int flag = (ImGuiTreeNodeFlags.SpanFullWidth | ImGuiTreeNodeFlags.OpenOnArrow);
-        boolean open = ImGui.treeNodeEx(gameObject.getName(), flag);
+        boolean open = ImGui.treeNodeEx(Icons.Cube + " " + gameObject.getName(), flag);
 
         if (ImGui.isItemClicked()) {
             GameEngineUI.getInstance()
@@ -70,6 +75,7 @@ public class SceneHierarchyWindow implements GameEngineUIComponent {
         if (open) {
 
 
+            displayGameObjectContextMenu(gameObject);
             int index = 0;
             for (GameObject childGameObject : gameObject.getChildren()) {
                 ImGui.separator();
@@ -78,7 +84,11 @@ public class SceneHierarchyWindow implements GameEngineUIComponent {
                 index++;
             }
             ImGui.treePop();
+        } else {
+            displayGameObjectContextMenu(gameObject);
         }
+
+
         ImGui.popID();
     }
 
@@ -96,11 +106,17 @@ public class SceneHierarchyWindow implements GameEngineUIComponent {
 
     private void process() {
         if (gameObjectToMove != null) {
-            if (gameObjectToMove.getParent() == gameObjectToMoveTo) {
+            if (gameObjectToMove.getParent().get() == gameObjectToMoveTo) {
                 attachGameObjectToSameParent();
             } else {
                 attachGameObjectToNewParent();
             }
+        }
+
+        if (gameObjectToDelete != null) {
+            gameObjectToDelete.removeFromParent();
+            EngineEventManager.dispatch("GameObjectDeleted", gameObjectToDelete);
+            gameObjectToDelete = null;
         }
 
         gameObjectToMoveTo = null;
@@ -122,4 +138,24 @@ public class SceneHierarchyWindow implements GameEngineUIComponent {
         System.out.println(gameObjectToMoveNewIndex);
         gameObjectToMoveTo.removeChild(null);
     }
+
+    private void displayWindowContextMenu() {
+        Scene scene = SceneManager.getActiveScene();
+        if (ImGui.beginPopupContextWindow()) {
+            if (ImGui.menuItem("New Game Object")) {
+                scene.addGameObject(GameObjectFactory.createGameObject());
+            }
+            ImGui.endPopup();
+        }
+    }
+
+    private void displayGameObjectContextMenu(GameObject gameObject) {
+        if (ImGui.beginPopupContextItem()) {
+            if (ImGui.menuItem("Delete")) {
+                gameObjectToDelete = gameObject;
+            }
+            ImGui.endPopup();
+        }
+    }
+
 }

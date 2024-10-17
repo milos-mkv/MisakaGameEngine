@@ -14,7 +14,7 @@ void main() {
                 }
                 gl_Position = projection * view * vec4(pos, 1.0);
                 gl_Position.x = newx;
-                color = vec3(0, 1, 0);
+                color = vec3(1, 0, 0);
         }
         if (pos.y != 0) {
                 float newy = 0;
@@ -25,6 +25,6 @@ void main() {
                 }
                 gl_Position = projection * view * vec4(pos, 1.0);
                 gl_Position.y = newy;
-                color = vec3(1, 0, 0);
+                color = vec3(0, 1, 0);
         }
 }
