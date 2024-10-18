@@ -19,7 +19,7 @@ public class EngineCameraController {
     private TransformComponent transform;
 
     public EngineCameraController() {
-        this.background = new Vector4f(0, 0, 0, 1);
+        this.background = new Vector4f(0.05f, 0.05f, 0.05f, 1);
         this.viewport = new Vector2f();
         this.transform = new TransformComponent();
         this.transform.setPosition(new Vector3f(0, 0, 2));
