@@ -2,10 +2,7 @@ package org.misaka.gui;
 
 import lombok.Data;
 import lombok.Getter;
-import org.misaka.gui.components.ActiveSceneWindow;
-import org.misaka.gui.components.GameObjectInspectorWindow;
-import org.misaka.gui.components.SceneHierarchyWindow;
-import org.misaka.gui.widgets.EngineCameraInfoWindow;
+import org.misaka.gui.components.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +20,10 @@ public class GameEngineUI {
         components.put(SceneHierarchyWindow.class, new SceneHierarchyWindow());
         components.put(GameObjectInspectorWindow.class, new GameObjectInspectorWindow());
         components.put(ActiveSceneWindow.class, new ActiveSceneWindow());
-        components.put(EngineCameraInfoWindow.class, new EngineCameraInfoWindow());
+        components.put(MainMenuBar.class, new MainMenuBar());
+        components.put(ConsoleWindow.class, new ConsoleWindow());
+
+        components.put(ProjectWindow.class, new ProjectWindow());
     }
 
     public void render() {

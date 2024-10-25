@@ -8,7 +8,6 @@ import org.misaka.core.components.TransformComponent;
 
 public abstract class ComponentFactory {
 
-
     public static Component createComponent(String type) {
         return switch (type) {
             case "Transform" -> new TransformComponent();

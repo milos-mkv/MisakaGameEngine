@@ -11,4 +11,6 @@ public class Icons {
     public static String Scale = "\uf424";
     public static String Rotate = "\uf2f1";
     public static String Translate = "\uf0b2";
+    public static String Play = "\uf04b";
+    public static String Pause = "\uf04c";
 }

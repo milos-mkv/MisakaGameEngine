@@ -3,9 +3,13 @@ package org.misaka.utils;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.lwjgl.PointerBuffer;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.nfd.NativeFileDialog;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,6 +34,17 @@ public abstract class Utils {
         return content;
     }
 
+    public static boolean createDirectory(String path) {
+        File directory = new File(path);
+        if (directory.exists()) {
+            return false;
+        }
+        if (!directory.mkdirs()) {
+            return false;
+        }
+        return true;
+    }
+
     public static String openFileDialog() {
         try {
             var pointerBuffer = PointerBuffer.allocateDirect(1);
@@ -37,6 +52,20 @@ public abstract class Utils {
             return pointerBuffer.getStringASCII().replace("\\", "/");
         } catch (Exception e) {
             System.out.println(e);
+            return null;
+        }
+    }
+
+    public static String openFolderDialog() {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            PointerBuffer outPathPtr = stack.mallocPointer(1);
+            int result = NativeFileDialog.NFD_PickFolder(outPathPtr, (ByteBuffer) null);
+
+            if (result == NativeFileDialog.NFD_OKAY) {
+                String folder = MemoryUtil.memUTF8(outPathPtr.get(0));
+                System.out.println(folder);
+                return folder;
+            }
             return null;
         }
     }

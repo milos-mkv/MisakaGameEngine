@@ -23,5 +23,4 @@ public abstract class SceneManager {
     public static void addScene(Scene scene) {
         scenes.put(scene.getName(), scene);
     }
-
 }

@@ -1,7 +1,6 @@
 package org.misaka.gui.components;
 
 import imgui.ImGui;
-import imgui.ImGuiStyle;
 import imgui.ImVec2;
 import imgui.extension.imguizmo.ImGuizmo;
 import imgui.extension.imguizmo.flag.Mode;
@@ -11,11 +10,14 @@ import imgui.flag.ImGuiMouseButton;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 import org.joml.Matrix4f;
+import org.misaka.app.GameEngine;
 import org.misaka.core.GameObject;
 import org.misaka.core.Scene;
 import org.misaka.core.Settings;
 import org.misaka.core.components.TransformComponent;
 import org.misaka.engine.EngineCameraController;
+import org.misaka.game.Game;
+import org.misaka.game.GameConfiguration;
 import org.misaka.gui.GameEngineUI;
 import org.misaka.gui.GameEngineUIComponent;
 import org.misaka.managers.SceneManager;
@@ -26,13 +28,17 @@ public class ActiveSceneWindow implements GameEngineUIComponent {
 
     private int manipulationOperation;
     private ImVec2 mouseLastPosition;
+    long cursor;
+
     public ActiveSceneWindow() {
         mouseLastPosition = new ImVec2(0, 0);
+
         manipulationOperation = Operation.TRANSLATE;
     }
 
     @Override
     public void render() {
+
         Scene scene = SceneManager.getActiveScene();
         ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, 0, 0);
         int flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
@@ -69,9 +75,12 @@ public class ActiveSceneWindow implements GameEngineUIComponent {
         renderManipulationToolbar();
         ImGui.sameLine();
         renderEngineCameraInfo();
+        ImGui.sameLine();
+        renderRunToolbar();
 
         ImGui.end();
         ImGui.popStyleVar();
+
     }
 
     private void renderEngineCameraInfo() {
@@ -80,7 +89,7 @@ public class ActiveSceneWindow implements GameEngineUIComponent {
     }
 
     private void renderManipulationToolbar() {
-        ImGui.beginChildFrame(1, 44, 110);
+        ImGui.beginChildFrame(2, 44, 110);
         ImGui.setCursorPosY(ImGui.getCursorPosY() + 4);
 
         int mode = manipulationOperation;
@@ -113,6 +122,26 @@ public class ActiveSceneWindow implements GameEngineUIComponent {
         if (mode == Operation.SCALE) {
             ImGui.popStyleColor();
         }
+        ImGui.endChildFrame();
+    }
+
+    private void renderRunToolbar() {
+        ImGui.setCursorPosX(ImGui.getWindowWidth() - 120);
+        ImGui.beginChildFrame(1, 110, 49);
+        ImGui.setCursorPos(5, 5);
+        ImGui.pushStyleVar(ImGuiStyleVar.FramePadding, 15, 7);
+        ImGui.pushStyleColor(ImGuiCol.Text, 0.5f, 1.0f, 0.5f, 1.0f);
+
+        if (ImGui.button(Icons.Play)) {
+        }
+        ImGui.popStyleColor();
+
+        ImGui.sameLine();
+
+        if (ImGui.button(Icons.Pause)) {
+
+        }
+        ImGui.popStyleVar();
         ImGui.endChildFrame();
     }
 
