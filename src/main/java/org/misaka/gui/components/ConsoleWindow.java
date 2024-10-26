@@ -11,7 +11,7 @@ public class ConsoleWindow implements GameEngineUIComponent {
     @Override
     public void render() {
         ImGui.begin("Console");
-        ExampleImGuiColorTextEdit.show(new ImBoolean(true));
+//        ExampleImGuiColorTextEdit.show(new ImBoolean(true));
         ImGui.end();
     }
 }

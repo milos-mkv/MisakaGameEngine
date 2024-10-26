@@ -4,12 +4,16 @@ import imgui.ImGui;
 import imgui.ImVec2;
 import org.misaka.app.Project;
 import org.misaka.gui.GameEngineUIComponent;
+import org.misaka.gui.widgets.FolderExplorer;
 import org.misaka.managers.ProjectManager;
+
+import java.nio.file.Paths;
 
 public class ProjectWindow implements GameEngineUIComponent {
 
-    public ProjectWindow() {
+    private FolderExplorer folderExplorer = null;
 
+    public ProjectWindow() {
     }
 
     @Override
@@ -25,6 +29,10 @@ public class ProjectWindow implements GameEngineUIComponent {
             );
             ImGui.textDisabled("No opened project");
         } else {
+            if (folderExplorer == null) {
+                folderExplorer = new FolderExplorer(Paths.get(project.getPath()));
+            }
+            folderExplorer.render();
 
         }
         ImGui.end();

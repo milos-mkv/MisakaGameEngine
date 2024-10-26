@@ -75,4 +75,26 @@ public abstract class Utils {
         matrix.get(buffer);
         return buffer;
     }
+
+    public static boolean doesDirectoryExists(String path) {
+        File directory = new File(path);
+        return directory.exists();
+    }
+
+    public static String getFileExtension(String fileName) {
+        int lastDotIndex = fileName.lastIndexOf('.');
+        if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
+            return fileName.substring(lastDotIndex + 1);
+        } else {
+            return null; // No extension found
+        }
+    }
+
+    public static String getFilenameWithoutExtension(String filename) {
+        int dotIndex = filename.lastIndexOf('.');
+        if (dotIndex > 0 && dotIndex < filename.length() - 1) {
+            filename = filename.substring(0, dotIndex);
+        }
+        return filename;
+    }
 }

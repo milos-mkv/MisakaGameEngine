@@ -67,7 +67,7 @@ public class GameEngine {
         this.engineWindow = new Window("Misaka Engine", 1000, 800);
         this.gameWindow = new Window("Game", 800, 600);
 
-        GLFW.glfwShowWindow(this.gameWindow.getHandle());
+//        GLFW.glfwShowWindow(this.gameWindow.getHandle());
         GLFW.glfwShowWindow(this.engineWindow.getHandle());
 
         GLFW.glfwMakeContextCurrent(engineWindow.getHandle());
@@ -117,7 +117,6 @@ public class GameEngine {
             ImGui.newFrame();
             ImGui.dockSpaceOverViewport(ImGui.getMainViewport());
             gameEngineUI.render();
-            ImGui.showDemoWindow();
 
             ImGui.render();
             imGuiImplGl3.renderDrawData(ImGui.getDrawData());
@@ -125,9 +124,9 @@ public class GameEngine {
             GLFW.glfwSwapBuffers(engineWindow.getHandle());
 
             // TODO:
-            GLFW.glfwMakeContextCurrent(gameWindow.getHandle());
-            gridRenderer.render1();
-            GLFW.glfwSwapBuffers(gameWindow.getHandle());
+//            GLFW.glfwMakeContextCurrent(gameWindow.getHandle());
+//            gridRenderer.render1();
+//            GLFW.glfwSwapBuffers(gameWindow.getHandle());
 
             GLFW.glfwPollEvents();
 

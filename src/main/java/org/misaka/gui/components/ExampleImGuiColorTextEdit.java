@@ -77,7 +77,7 @@ public class ExampleImGuiColorTextEdit {
 
     public static void show(final ImBoolean showImColorTextEditWindow) {
         ImGui.setNextWindowSize(500, 400);
-        if (ImGui.begin("Text Editor", showImColorTextEditWindow,
+        if (ImGui.begin("Text Editor1", showImColorTextEditWindow,
                 ImGuiWindowFlags.HorizontalScrollbar | ImGuiWindowFlags.MenuBar)) {
             if (ImGui.beginMenuBar()) {
                 if (ImGui.beginMenu("File")) {

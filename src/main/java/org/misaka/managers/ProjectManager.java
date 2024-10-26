@@ -8,6 +8,9 @@ import lombok.Data;
 import lombok.Getter;
 import org.misaka.app.Project;
 import org.misaka.app.ProjectConfiguration;
+import org.misaka.core.Scene;
+import org.misaka.factory.GameObjectFactory;
+import org.misaka.gfx.FrameBuffer;
 import org.misaka.utils.Utils;
 
 import java.nio.file.Path;
@@ -30,8 +33,32 @@ public class ProjectManager {
         objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 
-    public void loadProject(Path path) {
+    public boolean loadProject(Path path) {
+        Path configPath = Paths.get(path.toString(), "misaka-config.json");
+        String json = Utils.readFromFile(configPath);
+        Project project = null;
+        try {
+            project = objectMapper.readValue(json, Project.class);
+            System.out.println(project);
+        } catch (JsonProcessingException e) {
+            System.out.println(e);
+            return false;
+        }
 
+        // Validate project directory structure.
+        String[] essentialDirectories = new String[] { "scenes", "scripts", "assets" };
+        for (String directory : essentialDirectories) {
+            Path pathToDirectory = Paths.get(path.toString(), directory);
+            if (!Utils.doesDirectoryExists(pathToDirectory.toString())) {
+                System.out.println("Directory : " + pathToDirectory + " does not exist!");
+                return false;
+            }
+        }
+
+        project.setPath(path.toString());
+
+        this.project = project;
+        return true;
     }
 
     /**
