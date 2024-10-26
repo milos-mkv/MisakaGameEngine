@@ -3,6 +3,7 @@ package org.misaka.factory;
 import lombok.Getter;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 import org.misaka.gfx.Texture;
 
 import java.nio.ByteBuffer;
@@ -27,7 +28,7 @@ public abstract class TextureFactory {
         }
 
         try (var stack = MemoryStack.stackPush()) {
-            STBImage.stbi_set_flip_vertically_on_load(false);
+            STBImage.stbi_set_flip_vertically_on_load(true);
             IntBuffer w = stack.mallocInt(1);
             IntBuffer h = stack.mallocInt(1);
             IntBuffer noc = stack.mallocInt(1);
@@ -67,6 +68,72 @@ public abstract class TextureFactory {
         if (texture != null) {
             glDeleteTextures(texture.getId());
         }
+    }
+
+    public static Texture createTextureResized(Path path, int targetWidth, int targetHeight) {
+
+        if (loadedTextures.containsKey(path)) {
+            return loadedTextures.get(path);
+        }
+
+
+        ByteBuffer imageBuffer;
+        int originalWidth, originalHeight, channels;
+
+        // Load image with STBImage
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer widthBuffer = stack.mallocInt(1);
+            IntBuffer heightBuffer = stack.mallocInt(1);
+            IntBuffer channelsBuffer = stack.mallocInt(1);
+
+            imageBuffer = STBImage.stbi_load(path.toString(), widthBuffer, heightBuffer, channelsBuffer, 4); // 4 = RGBA
+            if (imageBuffer == null) {
+                throw new RuntimeException("Failed to load image: " + STBImage.stbi_failure_reason());
+            }
+
+            originalWidth = widthBuffer.get(0);
+            originalHeight = heightBuffer.get(0);
+            channels = channelsBuffer.get(0);
+        }
+
+        // Resize the image data
+        ByteBuffer resizedBuffer = resizeImage(imageBuffer, originalWidth, originalHeight, targetWidth, targetHeight, channels);
+        STBImage.stbi_image_free(imageBuffer);  // Free original image buffer
+
+        // Generate OpenGL texture
+        int textureID = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, targetWidth, targetHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, resizedBuffer);
+
+        // Set texture parameters for scaling
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        MemoryUtil.memFree(resizedBuffer);  // Free resized buffer
+
+        Texture texture = new Texture(path, textureID, targetWidth, targetHeight);
+        loadedTextures.put(path, texture);
+
+        return texture;
+    }
+
+    private static ByteBuffer resizeImage(ByteBuffer originalBuffer, int originalWidth, int originalHeight, int targetWidth, int targetHeight, int channels) {
+        ByteBuffer resizedBuffer = MemoryUtil.memAlloc(targetWidth * targetHeight * channels);
+
+        // Simple nearest-neighbor scaling for downsampling
+        for (int y = 0; y < targetHeight; y++) {
+            for (int x = 0; x < targetWidth; x++) {
+                int srcX = x * originalWidth / targetWidth;
+                int srcY = y * originalHeight / targetHeight;
+                int srcIndex = (srcX + srcY * originalWidth) * channels;
+                int destIndex = (x + y * targetWidth) * channels;
+
+                for (int c = 0; c < channels; c++) {
+                    resizedBuffer.put(destIndex + c, originalBuffer.get(srcIndex + c));
+                }
+            }
+        }
+        return resizedBuffer;
     }
 
 }

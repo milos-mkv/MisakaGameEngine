@@ -1,5 +1,6 @@
 package org.misaka.utils;
 
+import org.apache.tika.Tika;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.lwjgl.PointerBuffer;
@@ -13,8 +14,19 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public abstract class Utils {
+    static final List<String> supportedExtentions = Collections.unmodifiableList(Arrays.asList(
+            "jpg", "jpeg", "png", "bmp", "gif"
+    ));
+
+    public static boolean isImageFile(String ext) {
+        return supportedExtentions.contains(ext);
+    }
 
     public static void saveToFile(Path filePath, String data) {
         try {

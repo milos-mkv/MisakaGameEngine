@@ -9,7 +9,11 @@ import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImString;
 import org.misaka.engine.EngineAssetManager;
+import org.misaka.factory.TextureFactory;
+import org.misaka.gfx.Texture;
+import org.misaka.gui.GameEngineUI;
 import org.misaka.gui.GameEngineUIComponent;
+import org.misaka.gui.components.CodeEditorWindow;
 import org.misaka.utils.Utils;
 
 import java.awt.*;
@@ -164,13 +168,36 @@ public class FolderExplorer implements GameEngineUIComponent {
             if(Files.isDirectory(entry)) {
                 image = "FolderIcon";
             } else {
+
+                if (Objects.equals(ext, "png") ||Objects.equals(ext, "jpg") || Objects.equals(ext, "jpeg") ) {
+                    image = "ImageFileIcon";
+                } else
                 if (Objects.equals(ext, "lua")) {
                     image = "LuaFileIcon";
-                } else {
-                    image = "LuaFileIcon";
+                }else if (Objects.equals(ext, "json")) {
+                    image = "JsonFileIcon";
+                }else if (Objects.equals(ext, "scene")) {
+                    image = "SceneFileIcon";
+                }
+                else {
+                    image = "FileIcon";
                 }
             }
-            ImGui.image(EngineAssetManager.getInstance().getImages().get(image).getId(), 90, 90);
+            if (Utils.isImageFile(ext)) {
+                Texture t = TextureFactory.createTexture(entry.toAbsolutePath());
+
+                double widthRatio = (double) 90 / t.getWidth();
+                double heightRatio = (double) 90 / t.getHeight();
+                double scaleFactor = Math.min(widthRatio, heightRatio);
+
+                int newWidth = (int) (t.getWidth() * scaleFactor);
+                int newHeight = (int) (t.getHeight() * scaleFactor);
+                ImGui.setCursorPos(cur.x + 5 + ((90 - newWidth) / 2) , cur.y + ((90 - newHeight) / 2));
+
+                ImGui.image(t.getId(), newWidth, newHeight, 0, 1, 1, 0);
+            }
+            else
+                ImGui.image(EngineAssetManager.getInstance().getImages().get(image).getId(), 90, 90, 0, 1, 1, 0);
             ImGui.setCursorPos(cur.x, cur.y + 85);
             renderTruncatedText(filename, 90);
             ImGui.setCursorPos(cur.x, cur.y);
@@ -182,12 +209,15 @@ public class FolderExplorer implements GameEngineUIComponent {
             }
             if (ImGui.isItemHovered(ImGuiHoveredFlags.None)) {
                 if (ImGui.isMouseDoubleClicked(0) && Desktop.isDesktopSupported()) {
-                    if (!Files.isDirectory(entry)) {
-                        Desktop desktop = Desktop.getDesktop();
-                        try {
-                            desktop.open(new File(entry.toString()));
-                        } catch (IOException e) {
-                        }
+                    if (!Files.isDirectory(entry) && Objects.equals(ext, "lua")) {
+                        System.out.println("ASD");
+                        GameEngineUI.getInstance().addCodeEditor(entry);
+
+//                        Desktop desktop = Desktop.getDesktop();
+//                        try {
+//                            desktop.open(new File(entry.toString()));
+//                        } catch (IOException e) {
+//                        }
                     }
                 }
                 ImGui.beginTooltip();

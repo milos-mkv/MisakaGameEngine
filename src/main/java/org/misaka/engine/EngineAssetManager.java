@@ -51,7 +51,14 @@ public class EngineAssetManager {
     private void loadImages() {
         images = new HashMap<>();
         images.put("LuaFileIcon", TextureFactory.createTexture(Paths.get("./src/main/resources/images/lua.png")));
-        images.put("FolderIcon", TextureFactory.createTexture(Paths.get("src/main/resources/images/computer-folder.png"))); //folder_6940590
+        images.put("FolderIcon", TextureFactory.createTexture(Paths.get("src/main/resources/images/computer-folder.png")));
+        images.put("FileIcon", TextureFactory.createTexture(Paths.get("src/main/resources/images/file.png")));
+        images.put("JsonFileIcon", TextureFactory.createTexture(Paths.get("src/main/resources/images/json.png")));
+        images.put("UnknownFileIcon", TextureFactory.createTexture(Paths.get("src/main/resources/images/unknown.png")));
+        images.put("BinaryFileIcon", TextureFactory.createTexture(Paths.get("src/main/resources/images/binary.png")));
+        images.put("SceneFileIcon", TextureFactory.createTexture(Paths.get("src/main/resources/images/scene.png")));
+        images.put("ImageFileIcon", TextureFactory.createTexture(Paths.get("src/main/resources/images/image.png")));
+
     }
 
 }

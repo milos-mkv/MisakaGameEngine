@@ -43,6 +43,7 @@ public class ActiveSceneWindow implements GameEngineUIComponent {
         ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, 0, 0);
         int flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
         ImGui.begin("Scene", flags);
+        ImGui.text(String.valueOf(ImGui.getIO().getFramerate()));
         var startCursorPosition = ImGui.getCursorPos();
         Settings.w = ImGui.getWindowWidth();
         Settings.h = ImGui.getWindowHeight();
