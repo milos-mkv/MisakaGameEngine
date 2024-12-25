@@ -13,4 +13,6 @@ public class Icons {
     public static String Translate = "\uf0b2";
     public static String Play = "\uf04b";
     public static String Pause = "\uf04c";
+    public static String Folder = "\uf07b";
+    public static String FolderOpen = "\uf07c";
 }

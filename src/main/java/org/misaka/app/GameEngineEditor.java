@@ -10,41 +10,38 @@ import lombok.Data;
 import lombok.Getter;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.system.MemoryUtil;
-import org.misaka.core.GameObject;
 import org.misaka.core.Scene;
-import org.misaka.core.components.ScriptComponent;
-import org.misaka.core.components.SpriteComponent;
 import org.misaka.engine.EngineAssetManager;
 import org.misaka.engine.EngineRenderer;
 import org.misaka.factory.GameObjectFactory;
 import org.misaka.factory.SceneFactory;
 import org.misaka.factory.ShaderFactory;
-import org.misaka.game.Game;
-import org.misaka.gfx.*;
 import org.misaka.gfx.renderables.GridRenderer;
-import org.misaka.gfx.renderables.LineAxisRenderer;
 import org.misaka.gui.GameEngineUI;
 import org.misaka.managers.SceneManager;
+import org.misaka.utils.Disposable;
 
 import java.nio.file.Paths;
-import java.util.Objects;
 
+/**
+ * Game engine editor, creates game engine window and enables OpenGL capabilities.
+ */
 @Data
-public class GameEngine {
+public class GameEngineEditor implements Disposable {
 
     @Getter
-    private static final GameEngine instance = new GameEngine();
+    private static final GameEngineEditor instance = new GameEngineEditor();
 
-    private Window engineWindow;
+    private Window editorWindow;
     private Window gameWindow;
 
     private ImGuiImplGlfw imGuiImplGlfw;
     private ImGuiImplGl3 imGuiImplGl3;
 
-    public GameEngine() {
+    /**
+     * Constructor.
+     */
+    public GameEngineEditor() {
         initializeGlfw();
         initializeImGui();
     }
@@ -52,7 +49,7 @@ public class GameEngine {
     private void initializeGlfw() {
         GLFWErrorCallback.createPrint(System.err).free();
         if (!GLFW.glfwInit()) {
-            return;
+            throw new RuntimeException("Failed to initialize GLFW!");
         }
 
         GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -64,13 +61,11 @@ public class GameEngine {
             GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GLFW.GLFW_TRUE);
         }
 
-        this.engineWindow = new Window("Misaka Engine", 1000, 800);
+        this.editorWindow = new Window("Misaka Engine", 1000, 800);
         this.gameWindow = new Window("Game", 800, 600);
 
-//        GLFW.glfwShowWindow(this.gameWindow.getHandle());
-        GLFW.glfwShowWindow(this.engineWindow.getHandle());
-
-        GLFW.glfwMakeContextCurrent(engineWindow.getHandle());
+        GLFW.glfwShowWindow(this.editorWindow.getHandle());
+        GLFW.glfwMakeContextCurrent(this.editorWindow.getHandle());
     }
 
     private void initializeImGui() {
@@ -81,7 +76,7 @@ public class GameEngine {
 
         imGuiImplGlfw = new ImGuiImplGlfw();
         imGuiImplGl3 = new ImGuiImplGl3();
-        imGuiImplGlfw.init(engineWindow.getHandle(), true);
+        imGuiImplGlfw.init(editorWindow.getHandle(), true);
         imGuiImplGl3.init("#version 130");
 
         setupStyle();
@@ -106,10 +101,11 @@ public class GameEngine {
                 Paths.get("./src/main/resources/shaders/grid.frag")
         );
         GridRenderer gridRenderer = new GridRenderer();
+        System.out.println(SceneFactory.generateJsonFromScene(scene));
+        SceneFactory.generateSceneFromJson(SceneFactory.generateJsonFromScene(scene));
+        while (!GLFW.glfwWindowShouldClose(editorWindow.getHandle())) {
 
-        while (!GLFW.glfwWindowShouldClose(engineWindow.getHandle())) {
-
-            GLFW.glfwMakeContextCurrent(engineWindow.getHandle());
+            GLFW.glfwMakeContextCurrent(editorWindow.getHandle());
             EngineRenderer.getInstance().render(1);
 //            renderer.render();
 
@@ -121,7 +117,7 @@ public class GameEngine {
             ImGui.render();
             imGuiImplGl3.renderDrawData(ImGui.getDrawData());
 
-            GLFW.glfwSwapBuffers(engineWindow.getHandle());
+            GLFW.glfwSwapBuffers(editorWindow.getHandle());
 
             // TODO:
 //            GLFW.glfwMakeContextCurrent(gameWindow.getHandle());
@@ -133,15 +129,17 @@ public class GameEngine {
         }
     }
 
+    @Override
     public void dispose() {
         imGuiImplGl3.dispose();
         imGuiImplGlfw.dispose();
 
         ImGui.destroyContext();
-        engineWindow.dispose();
+        editorWindow.dispose();
         gameWindow.dispose();
         GLFW.glfwTerminate();
     }
+
     private void setupStyle() {
         float[][] colors = ImGui.getStyle().getColors();
 
@@ -226,8 +224,5 @@ public class GameEngine {
         style.setGrabRounding(3.0f);
         style.setLogSliderDeadzone(4.0f);
         style.setTabRounding(4.0f);
-
-//        ImGui.getIO().setFontGlobalScale(2);
     }
-
 }

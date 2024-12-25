@@ -10,11 +10,13 @@ import org.misaka.app.Project;
 import org.misaka.app.ProjectConfiguration;
 import org.misaka.core.Scene;
 import org.misaka.factory.GameObjectFactory;
+import org.misaka.factory.SceneFactory;
 import org.misaka.gfx.FrameBuffer;
 import org.misaka.utils.Utils;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.nio.file.*;
+import java.util.LinkedHashMap;
 
 @Data
 public class ProjectManager {
@@ -24,7 +26,6 @@ public class ProjectManager {
 
     private Project project;
     private ObjectMapper objectMapper;
-
 
     public ProjectManager() {
         project = null;
@@ -56,6 +57,26 @@ public class ProjectManager {
         }
 
         project.setPath(path.toString());
+
+        // TODO: Load scenes.
+        Path scenesDirectory = Paths.get(path.toString(), "scenes");
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(scenesDirectory)) {
+            for (Path entry : stream) {
+                if (Files.isDirectory(entry)) {
+                    continue;
+                }
+                String ext = Utils.getFileExtension(entry.getFileName().toString());
+                if (!ext.equals("scene")) {
+                    continue;
+                }
+                String sceneJsonData = Utils.readFromFile(entry);
+                Scene scene = SceneFactory.generateSceneFromJson(sceneJsonData);
+                project.setScenes(new LinkedHashMap<>());
+                project.getScenes().put(scene.getName(), scene);
+            }
+        } catch (IOException | DirectoryIteratorException e) {
+            System.out.println(e);
+        }
 
         this.project = project;
         return true;
@@ -95,6 +116,10 @@ public class ProjectManager {
         }
         
         return project;
+    }
+
+    public void saveProject() {
+        // TODO: Save current project.
     }
 
 }

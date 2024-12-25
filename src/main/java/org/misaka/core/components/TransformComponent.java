@@ -40,6 +40,7 @@ public class TransformComponent extends Component {
         this.parent = new WeakReference<>(transformComponent);
     }
 
+    @JsonIgnore
     public Matrix4f getWorldTransformMatrix() {
         if (this.parent != null) {
             return Objects.requireNonNull(this.parent.get())
@@ -49,6 +50,7 @@ public class TransformComponent extends Component {
         return getTransformMatrix();
     }
 
+    @JsonIgnore
     public void setTransformFromWorldMatrix(Matrix4f transform) {
         Matrix4f parentWorldTransform = new Matrix4f().identity().invert();
         if (this.parent != null) {

@@ -1,9 +1,13 @@
 package org.misaka.gui.components;
 
 import imgui.ImGui;
+import imgui.flag.ImGuiHoveredFlags;
 import imgui.flag.ImGuiTreeNodeFlags;
+import org.joml.Vector3f;
 import org.misaka.core.GameObject;
 import org.misaka.core.Scene;
+import org.misaka.core.components.TransformComponent;
+import org.misaka.engine.EngineCameraController;
 import org.misaka.engine.EngineEventManager;
 import org.misaka.factory.GameObjectFactory;
 import org.misaka.factory.SceneFactory;
@@ -11,6 +15,8 @@ import org.misaka.gui.GameEngineUI;
 import org.misaka.gui.GameEngineUIComponent;
 import org.misaka.managers.SceneManager;
 import org.misaka.utils.Icons;
+
+import java.awt.*;
 
 public class SceneHierarchyWindow implements GameEngineUIComponent {
 
@@ -56,7 +62,13 @@ public class SceneHierarchyWindow implements GameEngineUIComponent {
         ImGui.pushID(gameObject.getId().toString());
         int flag = (ImGuiTreeNodeFlags.SpanFullWidth | ImGuiTreeNodeFlags.OpenOnArrow);
         boolean open = ImGui.treeNodeEx(Icons.Cube + " " + gameObject.getName(), flag);
-
+        if (ImGui.isItemHovered(ImGuiHoveredFlags.None)) {
+            if (ImGui.isMouseDoubleClicked(0)) {
+                EngineCameraController
+                        .getInstance().getTransform().getPosition().x = gameObject.getComponent(TransformComponent.class).getPosition().x;
+                EngineCameraController
+                        .getInstance().getTransform().getPosition().y = gameObject.getComponent(TransformComponent.class).getPosition().y;
+            }}
         if (ImGui.isItemClicked()) {
             GameEngineUI.getInstance()
                     .getComponent(GameObjectInspectorWindow.class)

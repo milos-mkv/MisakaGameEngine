@@ -21,6 +21,7 @@ public class Project {
 
     @JsonIgnore
     private String path;
+
     @JsonIgnore
     Map<String, Scene> scenes;
 
@@ -30,5 +31,4 @@ public class Project {
         this.path = path;
         this.scenes = new LinkedHashMap<>();
     }
-
 }
